@@ -1,5 +1,5 @@
-import { Try } from 'expo-router/build/views/Try';
 import { useSQLiteContext } from 'expo-sqlite';
+import {  useEffect } from "react";
 
 export type ResiduosDataBase = {
     id : number
@@ -7,53 +7,84 @@ export type ResiduosDataBase = {
     categoria: string
     peso: string
     busca: string
-}//criando o local de vaiáveis do Banco
+}
 
 export function useResiduosDataBase(){
-    const dataBase = useSQLiteContext()//Acessar todos os metodos do bd
+    const dataBase = useSQLiteContext()
+
+    // Executar ao iniciar para garantir que a coluna exista
+    useEffect(() => {
+        async function verificarColuna() {
+            try {
+                await dataBase.execAsync("ALTER TABLE residuos ADD COLUMN sincronizado INTEGER DEFAULT 0");
+            } catch (error) {
+                // Provavelmente a coluna já existe. Ignora erro.
+            }
+        }
+        verificarColuna();
+    }, []);
 
     async function create(data: Omit<ResiduosDataBase, "id">){
         const statement = await dataBase.prepareAsync(
-            "insert into residuos(data,categoria,peso) values ($data,$categoria,$peso)"
+            "insert into residuos(data,categoria,peso,sincronizado) values ($data,$categoria,$peso,0)"
         )
 
         try {
-            const result = await statement.executeAsync({//executa o cadastro 
+            const result = await statement.executeAsync({
                 $data : data.data,
                 $categoria : data.categoria,
                 $peso: data.peso
             })
 
-            //coletando e devolvendo o ultimo id cadastrado
             const insertedRowId = result.lastInsertRowId.toLocaleString()
-            return{insertedRowId}
+            return { insertedRowId }
 
         } catch (error) {
             throw error
-        }finally{//finalizar o processo
+        } finally {
             await statement.finalizeAsync()
         }
-    }//fim da função
+    }
 
-    async function consultar(busca :string ){
+    async function consultar(busca : string){
         try {
-            const query = "select * from residuos where categoria  like ?  OR data like ? "//substituir por qualquer item de busca
+            const query = "select * from residuos where categoria like ? OR data like ?"
             const response = await dataBase.getAllAsync<ResiduosDataBase>(query,`%${busca}%`,`%${busca}%`)
             return response 
         } catch (error) {
             throw error
         }
-    }//fim do consultar
+    }
 
-
-    async function remove(id:number){
+    async function consultarNaoSincronizados() {
         try {
-            await dataBase.execAsync("Delete from residuos where id =" + id )
+            const query = "SELECT * FROM residuos WHERE sincronizado = 0";
+            const response = await dataBase.getAllAsync<ResiduosDataBase>(query);
+            return response;
         } catch (error) {
-            throw(error)
+            throw error;
         }
-    }//fim do remover
-    
+    }
+
+    async function marcarComoSincronizado(id: number) {
+        const statement = await dataBase.prepareAsync("UPDATE residuos SET sincronizado = 1 WHERE id = $id");
+        try {
+            await statement.executeAsync({ $id: id });
+        } catch (error) {
+            throw error;
+        } finally {
+            await statement.finalizeAsync();
+        }
+    }
+
+    async function remove(id: number){
+        try {
+            await dataBase.execAsync("Delete from residuos where id =" + id)
+        } catch (error) {
+            throw error
+        }
+    }
+
     async function atualizar(data: ResiduosDataBase){
         const statement = await dataBase.prepareAsync(
             "update residuos set data = $data, categoria = $categoria, peso = $peso where id = $id"
@@ -71,8 +102,14 @@ export function useResiduosDataBase(){
         }finally{
             await statement.finalizeAsync()
         }
-    }//fim do atualizar
+    }
 
-    
-    return {create,consultar,remove,atualizar}
-}//fim do create onde cria todos os métodos
+    return {
+        create,
+        consultar,
+        consultarNaoSincronizados,
+        marcarComoSincronizado,
+        remove,
+        atualizar
+    }
+}
