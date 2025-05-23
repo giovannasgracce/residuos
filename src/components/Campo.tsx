@@ -15,8 +15,8 @@ export function Campo({ ...rest }: TextInputProps) {
 const styles = StyleSheet.create({
   cmp: {
     width: 300,
-    fontSize: 20,
-    borderRadius: 50,
+    fontSize: 16,
+    borderRadius: 20,
     backgroundColor: "#93a267",
     color: "#FFFAFA", // cor do texto digitado
     margin: 10,

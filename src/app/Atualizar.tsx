@@ -1,11 +1,12 @@
-import { View, Button, StyleSheet, Alert, Platform, Text, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from "react-native";
 import { Campo } from "@/components/Campo";
 import { useState, useEffect } from "react";
-import { ResiduosDataBase, useResiduosDataBase } from "@/database/useResiduosDataBase";
+import { useResiduosDataBase } from "@/database/useResiduosDataBase";
 import { useNavigation } from "expo-router";
 import { useRoute } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Atualizar() {
   const [id, setId] = useState("");
@@ -13,7 +14,6 @@ export default function Atualizar() {
   const [categoria, setCategoria] = useState("");
   const [peso, setPeso] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const residuosDb = useResiduosDataBase();
   const navigation = useNavigation();
   const route = useRoute();
@@ -57,25 +57,25 @@ export default function Atualizar() {
     }
   }
 
-  async function atualizar() {
-    try {
-      await residuosDb.atualizar({
-        id: Number(id),
-        data,
-        categoria,
-        peso: parseFloat(peso),
-      });
+    async function atualizar() {
+      try {
+        await residuosDb.atualizar({
+          id: Number(id),
+          data,
+          categoria,
+          peso: parseFloat(peso),
+        });
 
-      Alert.alert("Sucesso!", "Dados do resíduo atualizados com sucesso", [
-        {
-          text: "OK",
-          onPress: () => navigation.navigate("Consultar"),
-        },
-      ]);
-    } catch (error) {
-      console.log(error);
+        Alert.alert("Sucesso!", "Dados do resíduo atualizados com sucesso", [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Consultar"),
+          },
+        ]);
+      } catch (error) {
+        console.log(error);
+      }
     }
-  }
 
   async function salvarAtualizacao() {
     if (!categoria || !peso || !data) {
@@ -85,7 +85,6 @@ export default function Atualizar() {
 
     await atualizar();
 
-    // limpar campos (opcional, já que vai navegar)
     setId("");
     setData("");
     setCategoria("");
@@ -94,12 +93,20 @@ export default function Atualizar() {
 
   return (
     <View style={styles.container}>
+      {/* Header com seta e título */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.navigate("Consultar")} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={28} color="#93a267" />
+        </TouchableOpacity>
+        <Text style={styles.titulo}>ATUALIZAR</Text>
+      </View>
+
       {/* Campo de Data */}
       <TouchableOpacity
         onPress={() => setShowDatePicker(true)}
         style={styles.dateInput}
       >
-        <Text style={{ fontSize: 16 }}>{data || "Selecione a data"}</Text>
+        <Text style={{ fontSize: 16, color: "#FFFAFA" }}>{data || "Selecione a data"}</Text>
       </TouchableOpacity>
 
       {showDatePicker && (
@@ -112,16 +119,19 @@ export default function Atualizar() {
       )}
 
       {/* Picker de Categoria */}
-      <Picker
-        selectedValue={categoria}
-        onValueChange={(itemValue) => setCategoria(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Selecione a categoria" value="" />
-        {categorias.map((cat, index) => (
-          <Picker.Item key={index} label={cat} value={cat} />
-        ))}
-      </Picker>
+      <View style={styles.pickerWrapper}>
+        <Picker
+          selectedValue={categoria}
+          onValueChange={(itemValue) => setCategoria(itemValue)}
+          style={styles.picker}
+          dropdownIconColor="#FFFAFA"
+        >
+          <Picker.Item label="Selecione a categoria" value="" />
+          {categorias.map((cat, index) => (
+            <Picker.Item key={index} label={cat} value={cat} />
+          ))}
+        </Picker>
+      </View>
 
       {/* Campo de Peso */}
       <Campo
@@ -136,8 +146,10 @@ export default function Atualizar() {
         value={peso}
       />
 
-      <Button title="Atualizar" onPress={salvarAtualizacao} />
-      <Button title="Voltar" onPress={() => navigation.navigate("Consultar")} />
+      {/* Botões */}
+      <TouchableOpacity style={styles.botao} onPress={salvarAtualizacao}>
+        <Text style={styles.textoBotao}>Atualizar</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -146,23 +158,76 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: "100%",
-    justifyContent: "center",
-    backgroundColor: "#898989",
+    backgroundColor: "#FFFAFA",
     alignItems: "center",
+    paddingTop: 250,
   },
-  picker: {
-    width: 300,
-    height: 50,
-    backgroundColor: "green",
-    marginBottom: 20,
+  header: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 5,
+    // sombra leve para destacar a seta
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+    borderRadius: 30,
+    backgroundColor: "#e0e6d4",
+  },
+  titulo: {
+    fontSize: 34,
+    fontWeight: 'bold',
+    color: '#93a267',
+    marginTop: 100,
   },
   dateInput: {
     width: 300,
     height: 50,
-    backgroundColor: "pink",
+    backgroundColor: "#93a267",
     justifyContent: "center",
     paddingHorizontal: 10,
     marginBottom: 20,
-    borderRadius: 5,
+    borderRadius: 22,
+  },
+  pickerWrapper: {
+    width: 300,
+    height: 50,
+    backgroundColor: "#93a267",
+    borderRadius: 22,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  picker: {
+    width: 300,
+    height: 50,
+    color: "#FFFAFA",
+  },
+  botao: {
+    backgroundColor: '#93a267',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    marginVertical: 8,
+    alignItems: 'center',
+    width: 220,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  textoBotao: {
+    color: '#FFFAFA',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

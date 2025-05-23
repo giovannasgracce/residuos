@@ -1,84 +1,139 @@
-import { View, Button, StyleSheet, Alert,FlatList} from "react-native"
-import {Campo} from "@/components/Campo"
-import {useState,useEffect} from 'react'
-import { ResiduosDataBase, useResiduosDataBase } from "@/database/useResiduosDataBase"
-import { useNavigation } from "expo-router"
-import {Residuos} from '@/components/Residuos'
+import { View, Button, StyleSheet, FlatList } from "react-native";
+import { Campo } from "@/components/Campo";
+import { useState, useEffect } from "react";
+import { useResiduosDataBase } from "@/database/useResiduosDataBase";
+import { useNavigation } from "expo-router";
+import { Residuos } from "@/components/Residuos";
+import { TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
+export default function Index() {
+  const [id, setId] = useState("");
+  const [data, setData] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [peso, setPeso] = useState("");
+  const [residuos, setResiduos] = useState([]);
+  const residuosDb = useResiduosDataBase();
+  const navigation = useNavigation();
+  const [busca, setBusca] = useState("");
 
- 
-export default function Index(){
-    const [id, setId] = useState("")
-    const [data, setData] = useState("")
-    const [categoria, setCategoria] = useState("")
-    const [peso, setPeso] = useState("")
-    const [residuos, setResiduos] = useState<ResiduosDataBase[]>()
-    const ResiduosDataBase = useResiduosDataBase()
-    const navigation = useNavigation()
-    const [busca,setBusca] = useState("")
-    
-    async function list(){
-        try {
-            const response = await ResiduosDataBase.consultar(busca)
-            setResiduos(response)
-        } catch (error) {
-            console.log(error)
-        }
-    }//fim do listar
-    
-    async function details(item:ResiduosDataBase){
-        setId(String(item.id))
-        setData(item.data)
-        setCategoria(item.categoria)
-        setPeso(item.peso)
-    }//detalha as estrutura de consulta 
-
-    async function remove(id:number){
-      try{
-          await ResiduosDataBase.remove(id)
-          await list()
-      }catch(error){
-        console.log(error)
-      }   
-    }//fim da função remover
-
-
-
-    //carregar a lista do banco
-    useEffect(() => {list()},[busca])
-    return (
-        <View style={styles.container}>
-            <Campo placeholder="Pesquisar" onChangeText={setBusca} />
-            <View style={styles.flat}>
-                <FlatList
-                    data = {residuos}
-                    keyExtractor={(item)=>String(item.id)}
-                    renderItem ={({item}) => <Residuos data={item} onDelete={() => remove(item.id)} onEditar={()=> navigation.navigate('Atualizar2',{item})}/>}
-                    contentContainerStyle={{gap:16}}
-                />
-            </View>
-       
-        <Button title="Voltar" onPress={() => navigation.navigate('Index')}/>
-    </View>
-
-    );
-}  
- 
-const styles = StyleSheet.create({
-        container: {
-            width: '100%',
-            height: '100%',
-            justifyContent: 'center',
-            backgroundColor: '#898989',
-            alignItems: "center",
-            marginTop: 25,
-        },
-
-        flat: {
-            width: '100%',
-            height: '50%',
-            padding: 10,
-            backgroundColor: '#fff',
-        },
+  async function list() {
+    try {
+      const response = await residuosDb.consultar(busca);
+      setResiduos(response);
+    } catch (error) {
+      console.log(error);
     }
-);
+  } // fim do listar
+
+  async function remove(id: number) {
+    try {
+      await residuosDb.remove(id);
+      await list();
+    } catch (error) {
+      console.log(error);
+    }
+  } // fim da função remover
+
+  // carregar a lista do banco
+  useEffect(() => {list();}, [busca]);
+
+  return (
+    <View style={styles.container}>
+    
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Index")}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#93a267" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.campoBusca}>
+        <Ionicons name="search" size={35} color="#666" style={styles.iconeBusca} />
+        <Campo
+            placeholder="Pesquisar"
+            placeholderTextColor="#666"
+            onChangeText={setBusca}
+            style={styles.inputBusca}
+        />
+      </View>
+
+
+   
+      <View style={styles.flat}>
+        <FlatList
+          data={residuos}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={({ item }) => (
+            <Residuos
+              data={item}
+              onDelete={() => remove(item.id)}
+              onEditar={() => navigation.navigate("Atualizar2", { item })}
+            />
+          )}
+          contentContainerStyle={{ gap: 16, paddingVertical: 10}}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFAFA",
+    paddingTop: 50,
+    alignItems: "center",
+  },
+  header: {
+    width: "100%",
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backButton: {
+    padding: 6,
+    borderRadius: 30,
+    backgroundColor: "#e0e6d4",
+    // sombra leve para destacar a seta
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  campo: {
+    width: "90%",
+    marginBottom: 15,
+  },
+  flat: {
+    width: "90%",
+    height: 320, 
+    backgroundColor: "#93a267",
+    borderRadius: 22,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  campoBusca: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e0e6d4",
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    width: "90%",
+    marginBottom: 15,
+  },
+  iconeBusca: {
+    marginRight: 8,
+  },
+  inputBusca: {
+    flex: 1,
+    color: "#333",
+    height: 40,
+  },
+
+});
