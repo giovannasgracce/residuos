@@ -124,6 +124,7 @@ export default function Index() {
       />
   
       {/* Botões */}
+      <View style={styles.teste}>
       <TouchableOpacity style={styles.botao} onPress={create}>
         <Text style={styles.textoBotao}>Cadastrar</Text>
       </TouchableOpacity>
@@ -131,6 +132,8 @@ export default function Index() {
       <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate("Consultar")}>
         <Text style={styles.textoBotao}>Consultar</Text>
       </TouchableOpacity>
+      </View>
+     
     </View>
   );
 }  
@@ -139,7 +142,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#FFFAFA",
+    backgroundColor: "#f0f4d6",
     alignItems: "center",
     paddingTop: 250, 
   },
@@ -193,7 +196,7 @@ const styles = StyleSheet.create({
     color: "#FFFAFA",
   },
   botao: {
-    backgroundColor: '#93a267',
+    backgroundColor: '#556B2F',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 16,
@@ -211,4 +214,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  teste: {
+    marginTop: 20,
+  }
 });

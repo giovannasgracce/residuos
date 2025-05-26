@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#FFFAFA",
+    backgroundColor: "#f0f4d6",
     alignItems: "center",
     paddingTop: 250,
   },
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     color: "#FFFAFA",
   },
   botao: {
-    backgroundColor: '#93a267',
+    backgroundColor: '#556B2F',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 16,

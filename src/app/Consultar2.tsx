@@ -1,4 +1,4 @@
-import { View, Button, StyleSheet, FlatList } from "react-native";
+import { View, Button, StyleSheet, FlatList,ScrollView  } from "react-native";
 import { Campo } from "@/components/Campo";
 import { useState, useEffect } from "react";
 import { useResiduosDataBase } from "@/database/useResiduosDataBase";
@@ -63,20 +63,18 @@ export default function Index() {
 
    
       <View style={styles.flat}>
-        <FlatList
-          data={residuos}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <Residuos
-              data={item}
-              onDelete={() => remove(item.id)}
-              onEditar={() => navigation.navigate("Atualizar2", { item })}
-            />
-          )}
-          contentContainerStyle={{ gap: 16, paddingVertical: 10}}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
+      <ScrollView contentContainerStyle={{ gap: 16, paddingVertical: 10 }}>
+        {residuos.map((item) => (
+          <Residuos
+            key={item.id}
+            data={item}
+            onDelete={() => remove(item.id)}
+            onEditar={() => navigation.navigate("Atualizar2", { item })}
+          />
+        ))}
+      </ScrollView>
+    </View>
+
     </View>
   );
 }
@@ -84,7 +82,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFAFA",
+    backgroundColor: "#f0f4d6",
     paddingTop: 50,
     alignItems: "center",
   },
@@ -112,12 +110,13 @@ const styles = StyleSheet.create({
   },
   flat: {
     width: "90%",
-    height: 320, 
+    height: 600, 
     backgroundColor: "#93a267",
     borderRadius: 22,
-    paddingHorizontal: 12,
+    paddingHorizontal: 2,
     paddingVertical: 8,
   },
+  
   campoBusca: {
     flexDirection: "row",
     alignItems: "center",
